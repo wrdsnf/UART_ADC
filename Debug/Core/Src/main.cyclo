@@ -1,0 +1,14 @@
+../Core/Src/main.c:83:6:send_uart	1
+../Core/Src/main.c:87:6:print_menu	1
+../Core/Src/main.c:96:6:set_pwm_duty	2
+../Core/Src/main.c:101:6:read_adc_single	2
+../Core/Src/main.c:111:6:read_adc_dma_avg	2
+../Core/Src/main.c:125:6:HAL_ADC_ConvCpltCallback	2
+../Core/Src/main.c:139:5:main	5
+../Core/Src/main.c:219:6:SystemClock_Config	3
+../Core/Src/main.c:266:13:MX_ADC1_Init	3
+../Core/Src/main.c:318:13:MX_TIM3_Init	4
+../Core/Src/main.c:367:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:398:13:MX_DMA_Init	1
+../Core/Src/main.c:416:13:MX_GPIO_Init	1
+../Core/Src/main.c:438:6:Error_Handler	1
