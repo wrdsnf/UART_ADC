@@ -215,11 +215,14 @@ int main(void)
 	          switch (rx_char) {
 	              case '1':
 	                  send_uart("Enter brightness (0-100): ");
-	                  char brightness_str[4] = {0};
-	                  HAL_UART_Receive(&huart2, (uint8_t *)brightness_str, 3, HAL_MAX_DELAY);
-	                  uint8_t brightness = atoi(brightness_str);
-	                  set_pwm_duty(brightness);
-	                  break;
+	          	  char brightness_str[4] = {0};
+	          	  HAL_UART_Receive(&huart2, (uint8_t *)brightness_str, 3, HAL_MAX_DELAY);
+	          	  uint8_t brightness = atoi(brightness_str);
+	          	  set_pwm_duty(brightness);
+	          	  sprintf(msg, "Brightness set to: %d\r\n", brightness);
+	          	  send_uart(msg);
+	          	  free_running_mode = 0;
+	          	  break;
 
 	              case '2':
 	                  read_adc_single();
