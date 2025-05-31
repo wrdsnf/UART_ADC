@@ -260,8 +260,8 @@ void stop_free_running() {
 
 ## 📹 Demo Video
 
-Demo pola nyala LED di video berikut:
-👉 [YouTube Demo: UART ADC PWM Menu STM32](https://youtu.be/crZ0VCA1HTE)
+Demo berada di video berikut:
+👉 [YouTube Demo: UART ADC PWM Menu STM32]([https://youtu.be/crZ0VCA1HTE](https://youtu.be/y7nvOMnNH_A))
 
 ## 👥 Anggota
 
