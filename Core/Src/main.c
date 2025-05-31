@@ -66,10 +66,13 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t adc_dma_buffer[10];   // Buffer untuk DMA (10 sampel)
+uint32_t adc_dma_buffer[10];
 uint32_t adc_avg = 0;
 char rx_char;
 char msg[64];
+
+volatile uint8_t adc_dma_done = 0;
+volatile uint8_t free_running_mode = 0;
 
 /* Function prototypes -------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -109,27 +112,56 @@ void read_adc_single() {
 }
 
 void read_adc_dma_avg() {
+    adc_dma_done = 0;
+    free_running_mode = 0;
+
+    if (HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10) != HAL_OK) {
+        send_uart("ADC DMA START FAIL\r\n");
+        return;
+    }
+
     HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10);
-    HAL_Delay(10); // Tunggu sedikit agar buffer terisi
+
+    while (!adc_dma_done) {
+        HAL_Delay(1);
+    }
+
     HAL_ADC_Stop_DMA(&hadc1);
 
     uint32_t sum = 0;
-    for (int i = 0; i < 10; i++) sum += adc_dma_buffer[i];
+    for (int i = 0; i < 10; i++) {
+        sum += adc_dma_buffer[i];
+    }
     adc_avg = sum / 10;
 
     sprintf(msg, "ADC DMA Avg: %lu\r\n", adc_avg);
     send_uart(msg);
+
+    for (int i = 0; i < 10; i++) {
+        sprintf(msg, "Sample %d: %lu\r\n", i + 1, adc_dma_buffer[i]);
+        send_uart(msg);
+    }
 }
 
-/* Callback untuk Free-running */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
     uint32_t sum = 0;
-    for (int i = 0; i < 10; i++) sum += adc_dma_buffer[i];
+    for (int i = 0; i < 10; i++) {
+        sum += adc_dma_buffer[i];
+    }
     adc_avg = sum / 10;
 
-    uint8_t pwm_val = (adc_avg * 100) / 4095;
-    set_pwm_duty(pwm_val);
+    if (free_running_mode) {
+        uint8_t pwm_val = (adc_avg * 100) / 4095;
+        set_pwm_duty(pwm_val);
+
+        char msg[64];
+        send_uart(msg);
+    } else {
+        HAL_ADC_Stop_DMA(hadc);
+        adc_dma_done = 1;
+    }
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -199,14 +231,15 @@ int main(void)
 
 	              case '4':
 	                  send_uart("Free-running mode started...\r\n");
-	                  HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10);  // akan terus dijalankan oleh DMA + callback
+	                  free_running_mode = 1;
+	                  HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10);
 	                  break;
 
 	              default:
 	                  send_uart("Invalid input. Try again.\r\n");
 	          }
 
-	          HAL_Delay(500);  // Delay antar menu biar nggak spam
+	          HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
