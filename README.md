@@ -52,10 +52,10 @@ Your choice:
 
 Berikut adalah gambar rangkaian LED dan tombol:
 
-![Rangkaian LED dan Tombol](images/rangkaian1.jpg)
-![Rangkaian LED dan Tombol di bread board](images/rangkaian2.jpg)
-![Rangkaian di STM32](images/rangkaian3.jpg)
-![Rangkaian di STM32](images/rangkaian4.jpg)
+![Rangkaian LED dan Tombol](images/Rangkaian1.jpg)
+![Rangkaian LED dan Tombol di bread board](images/Rangkaian2.jpg)
+![Rangkaian di STM32](images/Rangkaian3.jpg)
+![Rangkaian di STM32](images/Rangkaian4.jpg)
 
 ## 📍 Konfigurasi IOC
 
