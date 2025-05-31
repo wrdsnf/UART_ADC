@@ -159,17 +159,23 @@ void set_pwm_duty(uint8_t duty_percent) {
 ### 🟩 3. **ADC DMA Callback (Rata-rata atau Update PWM)**
 
 ```c
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-  uint32_t sum = 0;
-  for (int i = 0; i < 5; i++) sum += adc_dma_buffer[i];
-  adc_avg = sum / 5;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+    uint32_t sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum += adc_dma_buffer[i];
+    }
+    adc_avg = sum / 10;
 
-  if (free_running_mode) {
-    uint8_t pwm_val = (adc_avg * 100) / 4095;
-    set_pwm_duty(pwm_val);
-  } else {
-    adc_dma_done = 1;
-  }
+    if (free_running_mode) {
+        uint8_t pwm_val = (adc_avg * 100) / 4095;
+        set_pwm_duty(pwm_val);
+
+        char msg[64];
+        send_uart(msg);
+    } else {
+        HAL_ADC_Stop_DMA(hadc);
+        adc_dma_done = 1;
+    }
 }
 ```
 
@@ -193,17 +199,35 @@ void Configure_DMA_Mode(uint32_t mode) {
 
 ```c
 void read_adc_dma_avg() {
-  adc_dma_done = 0;
-  Configure_DMA_Mode(DMA_NORMAL);
-  HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 5);
-  while (!adc_dma_done);
-  HAL_ADC_Stop_DMA(&hadc1);
+    adc_dma_done = 0;
+    free_running_mode = 0;
 
-  uint32_t sum = 0;
-  for (int i = 0; i < 5; i++) sum += adc_dma_buffer[i];
-  adc_avg = sum / 5;
+    if (HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10) != HAL_OK) {
+        send_uart("ADC DMA START FAIL\r\n");
+        return;
+    }
 
-  printf("ADC DMA Avg: %lu\r\n", adc_avg);
+    HAL_ADC_Start_DMA(&hadc1, adc_dma_buffer, 10);
+
+    while (!adc_dma_done) {
+        HAL_Delay(1);
+    }
+
+    HAL_ADC_Stop_DMA(&hadc1);
+
+    uint32_t sum = 0;
+    for (int i = 0; i < 10; i++) {
+        sum += adc_dma_buffer[i];
+    }
+    adc_avg = sum / 10;
+
+    sprintf(msg, "ADC DMA Avg: %lu\r\n", adc_avg);
+    send_uart(msg);
+
+    for (int i = 0; i < 10; i++) {
+        sprintf(msg, "Sample %d: %lu\r\n", i + 1, adc_dma_buffer[i]);
+        send_uart(msg);
+    }
 }
 ```
 
